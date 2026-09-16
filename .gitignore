@@ -1,0 +1,7 @@
+android-sdk/
+android-app/
+__pycache__/
+*.apk
+*.idsig
+*.zip
+.agents/
