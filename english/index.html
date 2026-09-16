@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Emma - 3D English Tutor</title>
   <link rel="manifest" href="./manifest.json">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=3.1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -48,67 +48,70 @@
       <canvas id="vrm-canvas"></canvas>
     </main>
 
-    <!-- Floating Subtitle Area (100% English Immersion) -->
-    <section class="subtitles-card glass-panel">
-      <div id="tip-text" class="sub-tip">Tip: Loading...</div>
-      <div id="avatar-subtitle" class="avatar-speech">"Welcome! Let's start practicing English."</div>
-      <div id="user-subtitle" class="user-speech">Tap the microphone below to begin.</div>
-    </section>
+    <!-- Unified Bottom UI Container (No Overlap) -->
+    <div class="bottom-container">
+      <!-- Floating Subtitle Area (100% English Immersion) -->
+      <section class="subtitles-card glass-panel">
+        <div id="tip-text" class="sub-tip">Tip: Loading...</div>
+        <div id="avatar-subtitle" class="avatar-speech">"Welcome! Let's start practicing English."</div>
+        <div id="user-subtitle" class="user-speech">Tap the microphone below to begin.</div>
+      </section>
 
-    <!-- Bottom Controls Dock -->
-    <footer class="bottom-dock">
-      <!-- Stage 1 Controls (Listen & Repeat Mode) -->
-      <div id="stage1-controls" class="controls-row">
-        <div id="step-dots" class="step-dots"></div>
+      <!-- Bottom Controls Dock -->
+      <footer class="bottom-dock">
+        <!-- Stage 1 Controls (Listen & Repeat Mode) -->
+        <div id="stage1-controls" class="controls-row">
+          <div id="step-dots" class="step-dots"></div>
 
-        <div class="main-action-group">
-          <button id="listen-btn" class="glass-round-btn action-side-btn" title="Listen Again">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-            <span>Listen</span>
-          </button>
+          <div class="main-action-group">
+            <button id="listen-btn" class="glass-round-btn action-side-btn" title="Listen Again">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+              <span>Listen</span>
+            </button>
 
-          <button id="repeat-mic-btn" class="big-mic-btn" aria-label="Speak">
-            <div class="pulse-ring"></div>
-            <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-            </svg>
-          </button>
+            <button id="repeat-mic-btn" class="big-mic-btn" aria-label="Speak">
+              <div class="pulse-ring"></div>
+              <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+            </button>
 
-          <button id="next-sentence-btn" class="glass-round-btn action-side-btn" title="Next Sentence">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-            <span>Next</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Stage 2 Controls (Roleplay Mode) -->
-      <div id="stage2-controls" class="controls-row hidden">
-        <div class="roleplay-status">
-          <span id="mic-status-text">Tap to Speak</span>
+            <button id="next-sentence-btn" class="glass-round-btn action-side-btn" title="Next Sentence">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+              <span>Next</span>
+            </button>
+          </div>
         </div>
 
-        <div class="main-action-group">
-          <button id="goal-hint-btn" class="glass-round-btn action-side-btn" title="Mission Goal">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-            <span>Goal</span>
-          </button>
+        <!-- Stage 2 Controls (Roleplay Mode) -->
+        <div id="stage2-controls" class="controls-row hidden" style="display: none;">
+          <div class="roleplay-status">
+            <span id="mic-status-text">Tap to Speak</span>
+          </div>
 
-          <button id="roleplay-mic-btn" class="big-mic-btn" aria-label="Roleplay Voice Chat">
-            <div class="pulse-ring"></div>
-            <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-            </svg>
-          </button>
+          <div class="main-action-group">
+            <button id="goal-hint-btn" class="glass-round-btn action-side-btn" title="Mission Goal">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              <span>Goal</span>
+            </button>
 
-          <button id="reload-roleplay-btn" class="glass-round-btn action-side-btn" onclick="location.reload()" title="Reset">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-            <span>Restart</span>
-          </button>
+            <button id="roleplay-mic-btn" class="big-mic-btn" aria-label="Roleplay Voice Chat">
+              <div class="pulse-ring"></div>
+              <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+            </button>
+
+            <button id="reload-roleplay-btn" class="glass-round-btn action-side-btn" onclick="location.reload()" title="Reset">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+              <span>Restart</span>
+            </button>
+          </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </div>
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="overlay">
@@ -166,6 +169,6 @@
       }
     }, 6000);
   </script>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=3.1"></script>
 </body>
 </html>

@@ -128,6 +128,8 @@ class EnglishTutorApp {
     
     if (this.currentStage === 1) {
       this.dom.stageBadge.textContent = `Stage 1: Sentence ${this.currentSentenceIndex + 1}/3`;
+      this.dom.stage1Controls.style.display = 'flex';
+      this.dom.stage2Controls.style.display = 'none';
       this.dom.stage1Controls.classList.remove('hidden');
       this.dom.stage2Controls.classList.add('hidden');
       this.dom.tipText.textContent = `Tip: ${this.currentSentence.tip}`;
@@ -144,6 +146,8 @@ class EnglishTutorApp {
       this.dom.userSubtitle.textContent = 'Tap the microphone and repeat after Emma.';
     } else {
       this.dom.stageBadge.textContent = 'Stage 2: Live Roleplay';
+      this.dom.stage1Controls.style.display = 'none';
+      this.dom.stage2Controls.style.display = 'flex';
       this.dom.stage1Controls.classList.add('hidden');
       this.dom.stage2Controls.classList.remove('hidden');
       this.dom.tipText.textContent = `Roleplay with ${this.topic.roleplay.partnerName} (${this.topic.roleplay.partnerRole})`;

@@ -1,5 +1,5 @@
 // Service Worker for offline PWA caching
-const CACHE_NAME = 'emma-vrm-tutor-v1';
+const CACHE_NAME = 'emma-vrm-tutor-v2';
 const ASSETS = [
   './',
   './index.html',
