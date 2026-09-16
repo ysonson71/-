@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#121526">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Emma - 3D English Tutor</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./lib/three.module.js",
+      "three/addons/loaders/GLTFLoader.js": "./lib/GLTFLoader.js",
+      "@pixiv/three-vrm": "./lib/three-vrm.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top Floating Header -->
+    <header class="app-header">
+      <button id="topic-select-btn" class="glass-pill topic-badge">
+        <span id="topic-title">☕ Cafe Order</span>
+        <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+
+      <div id="stage-badge" class="glass-pill stage-pill">Stage 1: Sentence 1/3</div>
+
+      <button id="settings-btn" class="glass-icon-btn" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <!-- 3D Avatar Viewport -->
+    <main class="viewport-stage">
+      <canvas id="vrm-canvas"></canvas>
+    </main>
+
+    <!-- Floating Subtitle Area (100% English Immersion) -->
+    <section class="subtitles-card glass-panel">
+      <div id="tip-text" class="sub-tip">Tip: Loading...</div>
+      <div id="avatar-subtitle" class="avatar-speech">"Welcome! Let's start practicing English."</div>
+      <div id="user-subtitle" class="user-speech">Tap the microphone below to begin.</div>
+    </section>
+
+    <!-- Bottom Controls Dock -->
+    <footer class="bottom-dock">
+      <!-- Stage 1 Controls (Listen & Repeat Mode) -->
+      <div id="stage1-controls" class="controls-row">
+        <div id="step-dots" class="step-dots"></div>
+
+        <div class="main-action-group">
+          <button id="listen-btn" class="glass-round-btn action-side-btn" title="Listen Again">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <span>Listen</span>
+          </button>
+
+          <button id="repeat-mic-btn" class="big-mic-btn" aria-label="Speak">
+            <div class="pulse-ring"></div>
+            <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+          </button>
+
+          <button id="next-sentence-btn" class="glass-round-btn action-side-btn" title="Next Sentence">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            <span>Next</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stage 2 Controls (Roleplay Mode) -->
+      <div id="stage2-controls" class="controls-row hidden">
+        <div class="roleplay-status">
+          <span id="mic-status-text">Tap to Speak</span>
+        </div>
+
+        <div class="main-action-group">
+          <button id="goal-hint-btn" class="glass-round-btn action-side-btn" title="Mission Goal">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <span>Goal</span>
+          </button>
+
+          <button id="roleplay-mic-btn" class="big-mic-btn" aria-label="Roleplay Voice Chat">
+            <div class="pulse-ring"></div>
+            <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+          </button>
+
+          <button id="reload-roleplay-btn" class="glass-round-btn action-side-btn" onclick="location.reload()" title="Reset">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <span>Restart</span>
+          </button>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="overlay">
+      <div class="spinner"></div>
+      <div id="loading-text" class="loading-msg">Starting 3D VRM Engine...</div>
+    </div>
+
+    <!-- Topic Selection Modal -->
+    <div id="topic-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-sheet">
+        <div class="sheet-header">
+          <h3>Choose Conversation Topic</h3>
+          <button id="close-topic-btn" class="close-btn">&times;</button>
+        </div>
+        <div id="topic-list-container" class="topic-grid"></div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-sheet">
+        <div class="sheet-header">
+          <h3>Settings</h3>
+          <button id="close-settings-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="settings-content">
+          <div class="setting-item">
+            <label for="gemini-api-key">Gemini API Key</label>
+            <p class="setting-desc">Used for live conversational roleplay & pronunciation evaluation.</p>
+            <div class="input-row">
+              <input type="password" id="gemini-api-key" placeholder="AIzaSy...">
+              <button id="save-api-key-btn" class="primary-btn">Save</button>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <label>Custom 3D Avatar (.vrm)</label>
+            <p class="setting-desc">Upload your own .vrm character model from your phone or PC.</p>
+            <input type="file" id="vrm-file-input" accept=".vrm" class="file-input">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Fail-safe: Never block the user indefinitely on loading screen
+    setTimeout(function() {
+      var overlay = document.getElementById('loading-overlay');
+      if (overlay && !overlay.classList.contains('hidden')) {
+        console.warn('Safety timeout: Hiding loading overlay');
+        overlay.classList.add('hidden');
+      }
+    }, 6000);
+  </script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
