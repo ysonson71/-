@@ -1,0 +1,430 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Web Tetris</title>
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+  <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle, #1a1a2e 0%, #0f0f1b 100%);
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 26px;
+      letter-spacing: 2px;
+      color: #00f0f0;
+      text-shadow: 0 0 10px rgba(0, 240, 240, 0.5);
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      font-size: 11px;
+      color: #a0a0c0;
+    }
+    .game-container {
+      display: flex;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      max-width: 100%;
+    }
+    canvas#board {
+      background: #0a0a12;
+      border: 2px solid #333355;
+      border-radius: 6px;
+      display: block;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 130px;
+    }
+    .info-card {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .info-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #8a8aa3;
+      margin-bottom: 4px;
+    }
+    .info-val {
+      font-size: 20px;
+      font-weight: bold;
+      color: #ffcc00;
+    }
+    canvas#next-canvas {
+      background: #0a0a12;
+      border-radius: 4px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+    .btn {
+      background: #00f0f0;
+      color: #111;
+      font-weight: bold;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 6px;
+      transition: 0.2s;
+    }
+    .btn:hover { background: #00c4c4; }
+    .btn-restart { background: #ff4757; color: #fff; }
+    .btn-restart:hover { background: #e84118; }
+    
+    .controls {
+      margin-top: 15px;
+      display: grid;
+      grid-template-columns: repeat(3, 56px);
+      grid-gap: 8px;
+    }
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      height: 48px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .ctrl-btn:active { background: rgba(0, 240, 240, 0.3); }
+    .ctrl-wide { grid-column: span 3; height: 38px; font-size: 13px; font-weight: bold; }
+    
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10, 10, 20, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      z-index: 10;
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(0, 240, 240, 0.2);
+      border-top-color: #00f0f0;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .board-wrapper { position: relative; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PYTHON TETRIS</h1>
+    <div class="badge">Powered by PyScript (Python in WebAssembly)</div>
+  </header>
+
+  <div class="game-container">
+    <div class="board-wrapper">
+      <canvas id="board" width="240" height="480"></canvas>
+      <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-size: 13px; color:#a0a0c0;">파이썬 런타임 초기화 중...</div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div>
+        <div class="info-card">
+          <div class="info-title">Score</div>
+          <div class="info-val" id="score">0</div>
+        </div>
+        <div class="info-card">
+          <div class="info-title">Lines</div>
+          <div class="info-val" id="lines">0</div>
+        </div>
+        <div class="info-card">
+          <div class="info-title">Next</div>
+          <canvas id="next-canvas" width="80" height="80"></canvas>
+        </div>
+      </div>
+
+      <div>
+        <button id="btn-restart" class="btn btn-restart">재시작 (R)</button>
+        <button id="btn-pause" class="btn">일시정지 (P)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div></div>
+    <button class="ctrl-btn" id="ctrl-up">▲</button>
+    <div></div>
+    <button class="ctrl-btn" id="ctrl-left">◀</button>
+    <button class="ctrl-btn" id="ctrl-down">▼</button>
+    <button class="ctrl-btn" id="ctrl-right">▶</button>
+    <button class="ctrl-btn ctrl-wide" id="ctrl-drop">SPACE (즉시 하강)</button>
+  </div>
+
+  <script type="py">
+import asyncio
+import random
+from pyodide.ffi import create_proxy
+from js import document, window
+
+COLS, ROWS = 10, 20
+CELL = 24
+
+SHAPES = {
+    'I': [[(0, 1), (1, 1), (2, 1), (3, 1)], [(2, 0), (2, 1), (2, 2), (2, 3)]],
+    'O': [[(1, 0), (2, 0), (1, 1), (2, 1)]],
+    'T': [[(1, 0), (0, 1), (1, 1), (2, 1)], [(1, 0), (1, 1), (2, 1), (1, 2)],
+          [(0, 1), (1, 1), (2, 1), (1, 2)], [(1, 0), (0, 1), (1, 1), (1, 2)]],
+    'S': [[(1, 0), (2, 0), (0, 1), (1, 1)], [(1, 0), (1, 1), (2, 1), (2, 2)]],
+    'Z': [[(0, 0), (1, 0), (1, 1), (2, 1)], [(2, 0), (1, 1), (2, 1), (1, 2)]],
+    'J': [[(0, 0), (0, 1), (1, 1), (2, 1)], [(1, 0), (2, 0), (1, 1), (1, 2)],
+          [(0, 1), (1, 1), (2, 1), (2, 2)], [(1, 0), (1, 1), (0, 2), (1, 2)]],
+    'L': [[(2, 0), (0, 1), (1, 1), (2, 1)], [(1, 0), (1, 1), (1, 2), (2, 2)],
+          [(0, 1), (1, 1), (2, 1), (0, 2)], [(0, 0), (1, 0), (1, 1), (1, 2)]],
+}
+
+COLORS = {
+    'I': '#00f0f0', 'O': '#f0f000', 'T': '#a000f0',
+    'S': '#00f000', 'Z': '#f00000', 'J': '#0055ff', 'L': '#ff8800'
+}
+
+board_canvas = document.getElementById("board")
+ctx = board_canvas.getContext("2d")
+next_canvas = document.getElementById("next-canvas")
+nctx = next_canvas.getContext("2d")
+
+score_el = document.getElementById("score")
+lines_el = document.getElementById("lines")
+loading_el = document.getElementById("loading")
+
+class WebTetris:
+    def __init__(self):
+        self.board = [[None] * COLS for _ in range(ROWS)]
+        self.score = 0
+        self.lines = 0
+        self.paused = False
+        self.game_over = False
+        self.next_key = random.choice(list(SHAPES.keys()))
+        self.spawn()
+        self.draw()
+        self.draw_next()
+
+    def spawn(self):
+        self.shape_key = self.next_key
+        self.next_key = random.choice(list(SHAPES.keys()))
+        self.rot = 0
+        self.shape = SHAPES[self.shape_key][self.rot]
+        self.x = COLS // 2 - 2
+        self.y = 0
+
+        if not self.valid(self.x, self.y, self.shape):
+            self.game_over = True
+
+    def valid(self, px, py, shape):
+        for dx, dy in shape:
+            nx, ny = px + dx, py + dy
+            if nx < 0 or nx >= COLS or ny >= ROWS:
+                return False
+            if ny >= 0 and self.board[ny][nx]:
+                return False
+        return True
+
+    def move(self, dx, dy):
+        if self.game_over or self.paused:
+            return False
+        if self.valid(self.x + dx, self.y + dy, self.shape):
+            self.x += dx
+            self.y += dy
+            self.draw()
+            return True
+        return False
+
+    def rotate(self):
+        if self.game_over or self.paused:
+            return
+        next_rot = (self.rot + 1) % len(SHAPES[self.shape_key])
+        cand = SHAPES[self.shape_key][next_rot]
+        if self.valid(self.x, self.y, cand):
+            self.rot = next_rot
+            self.shape = cand
+            self.draw()
+
+    def drop(self):
+        if not self.move(0, 1):
+            self.freeze()
+            self.draw()
+
+    def hard_drop(self):
+        if self.game_over or self.paused:
+            return
+        while self.move(0, 1):
+            pass
+        self.freeze()
+        self.draw()
+
+    def freeze(self):
+        for dx, dy in self.shape:
+            nx, ny = self.x + dx, self.y + dy
+            if 0 <= ny < ROWS and 0 <= nx < COLS:
+                self.board[ny][nx] = COLORS[self.shape_key]
+        self.clear_lines()
+        self.spawn()
+        self.draw_next()
+
+    def clear_lines(self):
+        cleared = 0
+        new_board = []
+        for row in self.board:
+            if any(cell is None for cell in row):
+                new_board.append(row)
+            else:
+                cleared += 1
+        for _ in range(cleared):
+            new_board.insert(0, [None] * COLS)
+        self.board = new_board
+
+        if cleared > 0:
+            self.lines += cleared
+            self.score += [0, 100, 300, 500, 800][min(cleared, 4)]
+            score_el.innerText = str(self.score)
+            lines_el.innerText = str(self.lines)
+
+    def draw_cell(self, target_ctx, c, r, color, sz=CELL):
+        x, y = c * sz, r * sz
+        target_ctx.fillStyle = color
+        target_ctx.fillRect(x + 1, y + 1, sz - 2, sz - 2)
+        target_ctx.fillStyle = "rgba(255,255,255,0.25)"
+        target_ctx.fillRect(x + 1, y + 1, sz - 2, 3)
+
+    def draw(self):
+        ctx.clearRect(0, 0, COLS * CELL, ROWS * CELL)
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.03)"
+        for c in range(COLS + 1):
+            ctx.beginPath()
+            ctx.moveTo(c * CELL, 0)
+            ctx.lineTo(c * CELL, ROWS * CELL)
+            ctx.stroke()
+        for r in range(ROWS + 1):
+            ctx.beginPath()
+            ctx.moveTo(0, r * CELL)
+            ctx.lineTo(COLS * CELL, r * CELL)
+            ctx.stroke()
+
+        for r in range(ROWS):
+            for c in range(COLS):
+                val = self.board[r][c]
+                if val:
+                    self.draw_cell(ctx, c, r, val)
+
+        if not self.game_over:
+            for dx, dy in self.shape:
+                self.draw_cell(ctx, self.x + dx, self.y + dy, COLORS[self.shape_key])
+        else:
+            ctx.fillStyle = "rgba(0, 0, 0, 0.75)"
+            ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL)
+            ctx.fillStyle = "#ff4757"
+            ctx.font = "bold 22px sans-serif"
+            ctx.textAlign = "center"
+            ctx.fillText("GAME OVER", COLS * CELL / 2, ROWS * CELL / 2 - 10)
+            ctx.fillStyle = "#ffffff"
+            ctx.font = "13px sans-serif"
+            ctx.fillText("R 키 또는 재시작 버튼", COLS * CELL / 2, ROWS * CELL / 2 + 20)
+
+    def draw_next(self):
+        nctx.clearRect(0, 0, 80, 80)
+        shape = SHAPES[self.next_key][0]
+        color = COLORS[self.next_key]
+        for dx, dy in shape:
+            self.draw_cell(nctx, dx + 0.8, dy + 0.8, color, sz=18)
+
+game = WebTetris()
+loading_el.style.display = "none"
+
+def on_key(e):
+    k = e.key
+    if k in ["ArrowLeft", "a", "A"]:
+        game.move(-1, 0)
+    elif k in ["ArrowRight", "d", "D"]:
+        game.move(1, 0)
+    elif k in ["ArrowDown", "s", "S"]:
+        game.drop()
+    elif k in ["ArrowUp", "w", "W"]:
+        game.rotate()
+    elif k == " ":
+        game.hard_drop()
+    elif k in ["r", "R"]:
+        restart(None)
+    elif k in ["p", "P"]:
+        toggle_pause(None)
+
+key_proxy = create_proxy(on_key)
+window.addEventListener("keydown", key_proxy)
+
+def restart(e):
+    global game
+    game = WebTetris()
+    score_el.innerText = "0"
+    lines_el.innerText = "0"
+
+def toggle_pause(e):
+    game.paused = not game.paused
+    btn_p = document.getElementById("btn-pause")
+    btn_p.innerText = "계속하기" if game.paused else "일시정지 (P)"
+
+document.getElementById("btn-restart").addEventListener("click", create_proxy(restart))
+document.getElementById("btn-pause").addEventListener("click", create_proxy(toggle_pause))
+
+document.getElementById("ctrl-left").addEventListener("click", create_proxy(lambda e: game.move(-1, 0)))
+document.getElementById("ctrl-right").addEventListener("click", create_proxy(lambda e: game.move(1, 0)))
+document.getElementById("ctrl-up").addEventListener("click", create_proxy(lambda e: game.rotate()))
+document.getElementById("ctrl-down").addEventListener("click", create_proxy(lambda e: game.drop()))
+document.getElementById("ctrl-drop").addEventListener("click", create_proxy(lambda e: game.hard_drop()))
+
+async def main_loop():
+    while True:
+        if not game.game_over and not game.paused:
+            game.drop()
+        speed = max(0.12, 0.45 - (game.lines // 5) * 0.04)
+        await asyncio.sleep(speed)
+
+asyncio.create_task(main_loop())
+  </script>
+</body>
+</html>
