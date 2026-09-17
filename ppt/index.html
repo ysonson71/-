@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 원페이지 파워포인트 슬라이드 생성기 (웹/크롬 실행형)</title>
+  <!-- PptxGenJS 라이브러리: 브라우저에서 직접 PPTX 생성 -->
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #059669;
+      --accent-hover: #047857;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --prussian-blue: #003153;
+      --text-dark: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
+    body { background: var(--bg); color: var(--text-dark); display: flex; justify-content: center; padding: 30px 16px; }
+    .container { background: var(--card); max-width: 880px; width: 100%; border-radius: 12px; padding: 32px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    h1 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+    p.sub { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+
+    .top-bar { margin-bottom: 20px; }
+    .box { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
+    .box input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 12px; font-size: 13px; width: 75%; outline: none; }
+    .box input:focus { border-color: var(--primary); }
+
+    /* 슬라이드 형식 선택 카드 */
+    .format-section { margin-bottom: 20px; }
+    .format-label { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .format-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .format-card {
+      border: 2px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; cursor: pointer;
+      display: flex; align-items: center; gap: 12px; transition: all 0.2s ease; background: #fff;
+    }
+    .format-card:hover { border-color: #93c5fd; }
+    .format-card.active { border-color: var(--primary); background: #eff6ff; box-shadow: 0 0 0 1px var(--primary); }
+    .format-card .icon { font-size: 26px; line-height: 1; }
+    .format-card .title { font-size: 14px; font-weight: 700; color: #1e293b; }
+    .format-card .desc { font-size: 11px; color: #64748b; margin-top: 3px; }
+
+    .info-bar {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 10px 14px; margin-bottom: 18px; font-size: 12px; color: #334155; line-height: 1.5;
+    }
+
+    .step-header { font-weight: 700; font-size: 14px; color: #334155; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; line-height: 1.6; font-family: monospace; resize: vertical; outline: none; margin-bottom: 14px; }
+    textarea:focus { border-color: var(--primary); }
+
+    .btn-action {
+      width: 100%; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.15s; margin-bottom: 20px;
+    }
+    .btn-translate { background: var(--primary); color: #fff; }
+    .btn-translate:hover { background: var(--primary-hover); }
+    .btn-generate { background: var(--accent); color: #fff; }
+    .btn-generate:hover { background: var(--accent-hover); }
+    button:disabled { background: #94a3b8 !important; cursor: not-allowed; }
+
+    .result-section { border-top: 2px dashed #e2e8f0; padding-top: 20px; display: none; }
+    .status { margin-top: 8px; font-size: 13px; text-align: center; display: none; }
+    .status.error { color: #ef4444; }
+    .status.info { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI 원페이지 파워포인트 슬라이드 생성기</h1>
+    <p class="sub">크롬 브라우저에서 바로 실행되며, AI 요약부터 PPTX 파일 생성까지 즉시 수행합니다.</p>
+
+    <!-- Gemini API Key -->
+    <div class="top-bar">
+      <div class="box">
+        <span>🔑 Gemini API Key:</span>
+        <input type="password" id="api-key" placeholder="Google AI Studio에서 발급받은 Gemini API 키 입력" onchange="saveKey(this.value)">
+      </div>
+    </div>
+
+    <!-- 1단계: 슬라이드 형식 선택 -->
+    <div class="format-section">
+      <div class="format-label">1단계: 슬라이드 형식 선택</div>
+      <div class="format-grid">
+        <div class="format-card active" id="card-table" onclick="selectFormat('table')">
+          <div class="icon">📊</div>
+          <div>
+            <div class="title">1) 표(Table) 형식</div>
+            <div class="desc">이전 양식: 전체 너비 프러시안 블루 깔끔한 표</div>
+          </div>
+        </div>
+        <div class="format-card" id="card-content-image" onclick="selectFormat('content_image')">
+          <div class="icon">🖼️</div>
+          <div>
+            <div class="title">2) 내용 + 그림 형식</div>
+            <div class="desc">왼쪽: 핵심 내용 정리 / 오른쪽: 그림 삽입용 빈 공간</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-bar" id="info-bar">
+      📌 <b>디자인 규격 (16:9 와이드):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>프러시안 블루 표 (헤더·본문 14pt 고정)</b>
+    </div>
+
+    <!-- 2단계: 내용 입력 -->
+    <div class="step-header">
+      <span>2단계: 내용 입력 (보고서, 전략, 기획안 등)</span>
+    </div>
+    <textarea id="ko-input" rows="7" placeholder="여기에 내용을 입력하거나 붙여넣으세요. AI가 핵심 요약 및 선택한 레이아웃에 맞춰 자동 구조화합니다."></textarea>
+
+    <button class="btn-action btn-translate" id="btn-translate" onclick="runTranslate()">
+      ✨ AI 요약 & 구조화 실행
+    </button>
+
+    <!-- 3단계: 결과 확인 및 PPT 다운로드 -->
+    <div class="result-section" id="result-section">
+      <div class="step-header">
+        <span>3단계: 구조화된 내용 검토 및 수정</span>
+        <span style="font-size:11px; color:#059669;" id="result-hint">💡 제목 아래 '■ 1줄 요약'과 내용 확인</span>
+      </div>
+      <textarea id="ja-output" rows="9"></textarea>
+      <button class="btn-action btn-generate" id="btn-generate" onclick="generatePPT()">
+        📥 파워포인트(.pptx) 파일 다운로드
+      </button>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    let currentFormat = 'table';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedKey = localStorage.getItem('gemini_api_key');
+      if (savedKey) document.getElementById('api-key').value = savedKey;
+    });
+
+    function saveKey(val) {
+      localStorage.setItem('gemini_api_key', val.trim());
+    }
+
+    function selectFormat(fmt) {
+      currentFormat = fmt;
+      document.getElementById('card-table').classList.toggle('active', fmt === 'table');
+      document.getElementById('card-content-image').classList.toggle('active', fmt === 'content_image');
+
+      const infoBar = document.getElementById('info-bar');
+      const hint = document.getElementById('result-hint');
+      if (fmt === 'table') {
+        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>프러시안 블루 표 (헤더·본문 14pt 고정)</b>';
+        hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 표 내용 확인";
+      } else {
+        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>좌측: 핵심 내용 정리 / 우측: 그림 삽입용 빈 공간</b>';
+        hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 좌측 텍스트 항목 확인 (우측은 그림 영역)";
+      }
+    }
+
+    function cleanText(text) {
+      return text.replace(/<br\s*\/?>/gi, '\n')
+                 .replace(/\*\*(.*?)\*\*/g, '$1')
+                 .replace(/\*(.*?)\*/g, '$1')
+                 .replace(/`/g, '')
+                 .trim();
+    }
+
+    // Gemini API 호출 (클라이언트 브라우저에서 직접 요청)
+    async function callGemini(apiKey, prompt) {
+      const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+      let lastErr = null;
+
+      for (const model of models) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }]
+            })
+          });
+
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error?.message || `HTTP ${res.status}`);
+          }
+
+          const data = await res.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text.trim();
+        } catch (e) {
+          lastErr = e;
+          continue;
+        }
+      }
+      throw lastErr || new Error('Gemini API 응답을 받지 못했습니다.');
+    }
+
+    async function runTranslate() {
+      const key = document.getElementById('api-key').value.trim();
+      const koText = document.getElementById('ko-input').value.trim();
+      const btn = document.getElementById('btn-translate');
+      const status = document.getElementById('status');
+
+      if (!key) {
+        alert('Gemini API 키를 상단에 입력해 주세요.');
+        document.getElementById('api-key').focus();
+        return;
+      }
+      if (!koText) {
+        alert('내용을 입력해 주세요.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'AI가 핵심 요약 및 구조화 중...';
+      status.style.display = 'none';
+
+      let prompt = '';
+      if (currentFormat === 'content_image') {
+        prompt = `당신은 일본 비즈니스 기획서 및 파워포인트 원페이지 보고서 작성 전문가입니다.
+입력된 한국어 내용을 분석하여, '단 1장의 슬라이드 좌측에 들어갈 핵심 내용' 형태로 구조화하여 일본어로 번역하세요.
+(슬라이드 우측 반쪽은 사용자가 그림이나 다이어그램을 넣을 수 있도록 비워둘 예정입니다.)
+
+[필수 작성 규칙]
+1. 1행에는 슬라이드의 메인 타이틀을 '# 슬라이드 제목' 형식으로 작성하세요.
+2. 2행에는 장표 전체를 관통하는 '핵심 내용 1줄 요약문(결론/리드문)'을 반드시 '■ 요약문' 형식으로 작성하세요.
+3. 3행부터는 표(Table)를 만들지 말고, 좌측 영역에 들어갈 2~3개의 핵심 항목(섹션)을 아래 형식으로 작성하세요:
+   ### 1. 현황 및 과제 (또는 일본어 명칭)
+   - 세부 내용 항목 1 (체언지, 간결하게)
+   - 세부 내용 항목 2 (체언지, 간결하게)
+
+   ### 2. 주요 실행 과제
+   - 세부 내용 항목 1
+   - 세부 내용 항목 2
+
+   ### 3. 기대 효과 및 목표
+   - 세부 내용 항목 1
+   - 세부 내용 항목 2
+4. 모든 문장은 비즈니스 일본어 '체언지(体言止め, 명사형 종결)'로 군더더기 없이 간결하게 작성하세요.
+5. 표(| ... |)는 절대로 출력하지 마세요.
+6. '**' (볼드 기호) 또는 '<br>' (HTML 태그) 같은 기호는 사용하지 마세요.
+7. 마크다운 내용 외의 다른 인사말이나 잡담은 일절 출력하지 마세요.
+
+[입력된 한국어 내용]
+${koText}`;
+      } else {
+        prompt = `당신은 일본 비즈니스 기획서 및 파워포인트 원페이지 보고서 작성 전문가입니다.
+입력된 한국어 내용을 분석하여, '단 1장의 슬라이드에 들어갈 핵심 1줄 요약문과 간결한 표(Table)' 형태로 구조화하여 일본어로 번역하세요.
+
+[필수 작성 규칙]
+1. 1행에는 슬라이드의 메인 타이틀을 '# 슬라이드 제목' 형식으로 작성하세요.
+2. 2행에는 장표 전체를 관통하는 '핵심 내용 1줄 요약문(결론/리드문)'을 반드시 '■ 요약문' 형식으로 작성하세요.
+3. 그 아래에 반드시 마크다운 표(Table) 형식으로 핵심 내용을 3~4개 열, 3~5개 행으로 작성하세요.
+   - 표 헤더 예시: | 項目 | 現状・課題 | 推進施策 | 期待効果・KPI |
+4. 표 내부의 내용 항목에는 글머리 기호(▲, ▼, ●, •, -, * 등)를 절대로 붙이지 마세요!
+5. 표 내부의 모든 텍스트는 반드시 비즈니스 '체언지(体言止め, 명사형 종결)'로 작성하세요.
+6. '**' (볼드 기호) 또는 '<br>' (HTML 태그) 같은 기호는 사용하지 마세요.
+7. 마크다운 내용 외의 다른 인사말이나 잡담은 일절 출력하지 마세요.
+
+[입력된 한국어 내용]
+${koText}`;
+      }
+
+      try {
+        const result = await callGemini(key, prompt);
+        document.getElementById('ja-output').value = result;
+        document.getElementById('result-section').style.display = 'block';
+        document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+
+        btn.disabled = false;
+        btn.innerText = '✨ AI 요약 & 구조화 실행';
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = '✨ AI 요약 & 구조화 실행';
+        status.innerText = '오류: ' + err.message;
+        status.className = 'status error';
+        status.style.display = 'block';
+      }
+    }
+
+    // 1) 표 형식 파싱
+    function parseTableContent(text) {
+      const lines = text.split('\n').map(l => cleanText(l)).filter(l => l);
+      let title = "タイトル";
+      let summary = "";
+      let tableRows = [];
+
+      for (const line of lines) {
+        if (line.startsWith('#') && !tableRows.length) {
+          title = line.replace(/^#+\s*/, '').trim();
+        } else if ((line.startsWith('■') || line.startsWith('□') || line.startsWith('▶') || line.startsWith('●') || (summary === "" && !line.startsWith('|') && !line.startsWith('#'))) && !tableRows.length) {
+          summary = line.replace(/^[■□▶●>\s\-]+/, '').trim();
+        } else if (line.startsWith('|') && line.endsWith('|')) {
+          if (/^\|[\s\-:|]+\|$/.test(line)) continue;
+          const cells = line.split('|').slice(1, -1).map(c => {
+            return cleanText(c).replace(/^[▲▼●○•\-\*\s]+/, '').trim();
+          });
+          if (cells.length) tableRows.push(cells);
+        }
+      }
+      return { title, summary, tableRows };
+    }
+
+    // 2) 내용+그림 형식 파싱
+    function parseContentImage(text) {
+      const lines = text.split('\n').map(l => cleanText(l)).filter(l => l);
+      let title = "タイトル";
+      let summary = "";
+      let sections = [];
+      let currentSec = null;
+
+      for (const line of lines) {
+        if (line.startsWith('#') && !line.startsWith('###') && !sections.length) {
+          title = line.replace(/^#+\s*/, '').trim();
+        } else if ((line.startsWith('■') || line.startsWith('□') || line.startsWith('▶') || line.startsWith('●') || (summary === "" && !line.startsWith('#') && !line.startsWith('-'))) && !sections.length) {
+          summary = line.replace(/^[■□▶●>\s\-]+/, '').trim();
+        } else if (line.startsWith('###') || /^\d+[\.\)]\s*/.test(line)) {
+          const secTitle = line.replace(/^###+\s*/, '').trim();
+          currentSec = { title: secTitle, items: [] };
+          sections.push(currentSec);
+        } else {
+          const itemText = line.replace(/^[▲▼●○•\-\*\d\.\)\s]+/, '').trim();
+          if (itemText) {
+            if (!currentSec) {
+              currentSec = { title: '', items: [] };
+              sections.push(currentSec);
+            }
+            currentSec.items.push(itemText);
+          }
+        }
+      }
+      return { title, summary, sections };
+    }
+
+    // PptxGenJS를 사용한 PPTX 생성 및 브라우저 다운로드
+    async function generatePPT() {
+      const btn = document.getElementById('btn-generate');
+      const status = document.getElementById('status');
+      const text = document.getElementById('ja-output').value.trim();
+
+      if (!text) return;
+
+      btn.disabled = true;
+      btn.innerText = '파워포인트 생성 중...';
+      status.style.display = 'none';
+
+      try {
+        const pres = new PptxGenJS();
+        pres.defineLayout({ name: 'WIDE_16_9', width: 13.333, height: 7.5 });
+        pres.layout = 'WIDE_16_9';
+
+        const slide = pres.addSlide();
+
+        if (currentFormat === 'table') {
+          const { title, summary, tableRows } = parseTableContent(text);
+
+          // 1. 슬라이드 제목 (24pt 볼드, 왼쪽 맞춤)
+          slide.addText(title, {
+            x: 0.8, y: 0.35, w: 11.733, h: 0.65,
+            fontSize: 24, bold: true, color: '0F172A', align: 'left', valign: 'top'
+          });
+
+          // 2. ■ 핵심 1줄 요약문 (16pt 볼드, 검은색 분리선 없이 바로 이어짐)
+          if (summary) {
+            slide.addText([
+              { text: "■ ", options: { bold: true, fontSize: 16, color: '1E293B' } },
+              { text: summary, options: { bold: true, fontSize: 16, color: '1E293B' } }
+            ], {
+              x: 0.8, y: 1.24, w: 11.733, h: 0.5,
+              align: 'left', valign: 'top', wrap: true
+            });
+          }
+
+          // 3. 표 데이터 구성
+          if (tableRows.length) {
+            const tableData = tableRows.map((row, rIdx) => {
+              return row.map(cellText => {
+                if (rIdx === 0) {
+                  return {
+                    text: cellText,
+                    options: {
+                      fill: { color: '003153' }, // 프러시안 블루
+                      color: 'FFFFFF',
+                      bold: true,
+                      fontSize: 14,
+                      align: 'center',
+                      valign: 'middle'
+                    }
+                  };
+                } else {
+                  return {
+                    text: cellText,
+                    options: {
+                      fill: { color: 'FFFFFF' },
+                      color: '1E293B',
+                      bold: false,
+                      fontSize: 14,
+                      align: 'left',
+                      valign: 'middle'
+                    }
+                  };
+                }
+              });
+            });
+
+            slide.addTable(tableData, {
+              x: 0.8, y: 1.85, w: 11.733, h: 4.8,
+              border: { type: 'solid', pt: 1, color: '000000' },
+              margin: [6, 8, 6, 8]
+            });
+          }
+
+          await pres.writeFile({ fileName: 'presentation_table.pptx' });
+
+        } else {
+          // 내용 + 그림 형식
+          const { title, summary, sections } = parseContentImage(text);
+
+          // 1. 슬라이드 제목 (24pt)
+          slide.addText(title, {
+            x: 0.8, y: 0.35, w: 11.733, h: 0.65,
+            fontSize: 24, bold: true, color: '0F172A', align: 'left', valign: 'top'
+          });
+
+          // 2. ■ 1줄 요약문 (16pt)
+          if (summary) {
+            slide.addText([
+              { text: "■ ", options: { bold: true, fontSize: 16, color: '1E293B' } },
+              { text: summary, options: { bold: true, fontSize: 16, color: '1E293B' } }
+            ], {
+              x: 0.8, y: 1.24, w: 11.733, h: 0.5,
+              align: 'left', valign: 'top', wrap: true
+            });
+          }
+
+          // 3. 좌측 내용 정리 영역 (너비 5.7인치)
+          const textRuns = [];
+          sections.forEach((sec, idx) => {
+            if (sec.title) {
+              if (idx > 0) textRuns.push({ text: "\n", options: { fontSize: 8 } });
+              textRuns.push({ text: sec.title + "\n", options: { bold: true, fontSize: 15, color: '003153' } });
+            }
+            sec.items.forEach(item => {
+              textRuns.push({ text: "• " + item + "\n", options: { bold: false, fontSize: 13, color: '1E293B' } });
+            });
+          });
+
+          slide.addText(textRuns, {
+            x: 0.8, y: 1.85, w: 5.7, h: 5.0,
+            align: 'left', valign: 'top', wrap: true
+          });
+
+          // 4. 우측 그림용 빈 공간 (점선 가이드 사각형)
+          slide.addShape(pres.ShapeType.roundRect, {
+            x: 6.8, y: 1.85, w: 5.7, h: 5.0,
+            fill: { type: 'none' },
+            line: { color: 'CBD5E1', width: 1.5, dashType: 'dash' }
+          });
+
+          slide.addText([
+            { text: "🖼️ [ 그림 / 도표 삽입 영역 ]\n\n", options: { bold: true, fontSize: 14, color: '94A3B8' } },
+            { text: "(이 영역에 이미지를 자유롭게 배치하세요)", options: { fontSize: 12, color: '94A3B8' } }
+          ], {
+            x: 6.8, y: 1.85, w: 5.7, h: 5.0,
+            align: 'center', valign: 'middle'
+          });
+
+          await pres.writeFile({ fileName: 'presentation_content_image.pptx' });
+        }
+
+        btn.disabled = false;
+        btn.innerText = '📥 파워포인트(.pptx) 파일 다운로드';
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = '📥 파워포인트(.pptx) 파일 다운로드';
+        status.innerText = '오류: ' + err.message;
+        status.className = 'status error';
+        status.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
