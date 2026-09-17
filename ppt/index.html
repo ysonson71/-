@@ -17,30 +17,30 @@
       --prussian-blue: #003153;
       --text-dark: #1e293b;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Meiryo UI", Meiryo, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
     body { background: var(--bg); color: var(--text-dark); display: flex; justify-content: center; padding: 30px 16px; }
-    .container { background: var(--card); max-width: 880px; width: 100%; border-radius: 12px; padding: 32px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    .container { background: var(--card); max-width: 920px; width: 100%; border-radius: 12px; padding: 32px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
     h1 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
     p.sub { color: #64748b; font-size: 13px; margin-bottom: 20px; }
 
     .top-bar { margin-bottom: 20px; }
     .box { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
-    .box input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 12px; font-size: 13px; width: 75%; outline: none; }
+    .box input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 12px; font-size: 13px; width: 75%; outline: none; font-family: inherit; }
     .box input:focus { border-color: var(--primary); }
 
-    /* 슬라이드 형식 선택 카드 */
+    /* 슬라이드 형식 선택 카드 (3열) */
     .format-section { margin-bottom: 20px; }
     .format-label { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-    .format-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .format-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
     .format-card {
       border: 2px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; cursor: pointer;
-      display: flex; align-items: center; gap: 12px; transition: all 0.2s ease; background: #fff;
+      display: flex; align-items: flex-start; gap: 12px; transition: all 0.2s ease; background: #fff;
     }
     .format-card:hover { border-color: #93c5fd; }
     .format-card.active { border-color: var(--primary); background: #eff6ff; box-shadow: 0 0 0 1px var(--primary); }
-    .format-card .icon { font-size: 26px; line-height: 1; }
-    .format-card .title { font-size: 14px; font-weight: 700; color: #1e293b; }
-    .format-card .desc { font-size: 11px; color: #64748b; margin-top: 3px; }
+    .format-card .icon { font-size: 26px; line-height: 1; flex-shrink: 0; }
+    .format-card .title { font-size: 13.5px; font-weight: 700; color: #1e293b; }
+    .format-card .desc { font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.4; }
 
     .info-bar {
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
@@ -48,11 +48,11 @@
     }
 
     .step-header { font-weight: 700; font-size: 14px; color: #334155; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; line-height: 1.6; font-family: monospace; resize: vertical; outline: none; margin-bottom: 14px; }
+    textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; line-height: 1.6; font-family: "Meiryo UI", Meiryo, monospace; resize: vertical; outline: none; margin-bottom: 14px; }
     textarea:focus { border-color: var(--primary); }
 
     .btn-action {
-      width: 100%; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.15s; margin-bottom: 20px;
+      width: 100%; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.15s; margin-bottom: 20px; font-family: inherit;
     }
     .btn-translate { background: var(--primary); color: #fff; }
     .btn-translate:hover { background: var(--primary-hover); }
@@ -69,7 +69,7 @@
 <body>
   <div class="container">
     <h1>AI 원페이지 파워포인트 슬라이드 생성기</h1>
-    <p class="sub">크롬 브라우저에서 바로 실행되며, AI 요약부터 PPTX 파일 생성까지 즉시 수행합니다.</p>
+    <p class="sub">크롬 브라우저에서 바로 실행되며, Meiryo UI 폰트 기반의 고품질 PPTX 파일을 자동 생성합니다.</p>
 
     <!-- Gemini API Key -->
     <div class="top-bar">
@@ -79,7 +79,7 @@
       </div>
     </div>
 
-    <!-- 1단계: 슬라이드 형식 선택 -->
+    <!-- 1단계: 슬라이드 형식 선택 (3가지 옵션) -->
     <div class="format-section">
       <div class="format-label">1단계: 슬라이드 형식 선택</div>
       <div class="format-grid">
@@ -87,21 +87,28 @@
           <div class="icon">📊</div>
           <div>
             <div class="title">1) 표(Table) 형식</div>
-            <div class="desc">이전 양식: 전체 너비 프러시안 블루 깔끔한 표</div>
+            <div class="desc">전체 너비 프러시안 블루 헤더 깔끔한 표</div>
           </div>
         </div>
-        <div class="format-card" id="card-content-image" onclick="selectFormat('content_image')">
+        <div class="format-card" id="card-content-image-50" onclick="selectFormat('content_image_50')">
           <div class="icon">🖼️</div>
           <div>
-            <div class="title">2) 내용 + 그림 형식</div>
-            <div class="desc">왼쪽: 핵심 내용 정리 / 오른쪽: 그림 삽입용 빈 공간</div>
+            <div class="title">2) 내용+그림 (50:50)</div>
+            <div class="desc">좌측 내용(50%) / 우측 그림 공간(50%)</div>
+          </div>
+        </div>
+        <div class="format-card" id="card-content-image-30" onclick="selectFormat('content_image_30')">
+          <div class="icon">📐</div>
+          <div>
+            <div class="title">3) 내용+그림 (30:70)</div>
+            <div class="desc">좌측 핵심내용(30%) / 우측 대형 그림(70%)</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="info-bar" id="info-bar">
-      📌 <b>디자인 규격 (16:9 와이드):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>프러시안 블루 표 (헤더·본문 14pt 고정)</b>
+      📌 <b>디자인 규격 (16:9 와이드, 폰트: Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>프러시안 블루 표 (헤더·본문 14pt 고정)</b>
     </div>
 
     <!-- 2단계: 내용 입력 -->
@@ -130,6 +137,7 @@
   </div>
 
   <script>
+    const FONT_FAMILY = "Meiryo UI";
     let currentFormat = 'table';
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -144,16 +152,21 @@
     function selectFormat(fmt) {
       currentFormat = fmt;
       document.getElementById('card-table').classList.toggle('active', fmt === 'table');
-      document.getElementById('card-content-image').classList.toggle('active', fmt === 'content_image');
+      document.getElementById('card-content-image-50').classList.toggle('active', fmt === 'content_image_50');
+      document.getElementById('card-content-image-30').classList.toggle('active', fmt === 'content_image_30');
 
       const infoBar = document.getElementById('info-bar');
       const hint = document.getElementById('result-hint');
+
       if (fmt === 'table') {
-        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>프러시안 블루 표 (헤더·본문 14pt 고정)</b>';
+        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드, Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>프러시안 블루 표 (헤더·본문 14pt 고정)</b>';
         hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 표 내용 확인";
+      } else if (fmt === 'content_image_50') {
+        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드, Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>좌측: 핵심 내용 정리(50%) / 우측: 그림 영역(50%)</b>';
+        hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 좌측 텍스트 항목 확인 (우측 50%는 그림 영역)";
       } else {
-        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>좌측: 핵심 내용 정리 / 우측: 그림 삽입용 빈 공간</b>';
-        hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 좌측 텍스트 항목 확인 (우측은 그림 영역)";
+        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드, Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>좌측: 컴팩트 핵심내용(30%) / 우측: 대형 그림 영역(70%)</b>';
+        hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 좌측 핵심 텍스트 확인 (우측 70%는 대형 그림 영역)";
       }
     }
 
@@ -165,7 +178,7 @@
                  .trim();
     }
 
-    // Gemini API 호출 (클라이언트 브라우저에서 직접 요청)
+    // Gemini API 호출 (브라우저 직접 fetch)
     async function callGemini(apiKey, prompt) {
       const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
       let lastErr = null;
@@ -218,10 +231,31 @@
       status.style.display = 'none';
 
       let prompt = '';
-      if (currentFormat === 'content_image') {
+      if (currentFormat === 'table') {
+        prompt = `당신은 일본 비즈니스 기획서 및 파워포인트 원페이지 보고서 작성 전문가입니다.
+입력된 한국어 내용을 분석하여, '단 1장의 슬라이드에 들어갈 핵심 1줄 요약문과 간결한 표(Table)' 형태로 구조화하여 일본어로 번역하세요.
+
+[필수 작성 규칙]
+1. 1행에는 슬라이드의 메인 타이틀을 '# 슬라이드 제목' 형식으로 작성하세요.
+2. 2행에는 장표 전체를 관통하는 '핵심 내용 1줄 요약문(결론/리드문)'을 반드시 '■ 요약문' 형식으로 작성하세요.
+3. 그 아래에 반드시 마크다운 표(Table) 형식으로 핵심 내용을 3~4개 열, 3~5개 행으로 작성하세요.
+   - 표 헤더 예시: | 項目 | 現状・課題 | 推進施策 | 期待効果・KPI |
+4. 표 내부의 내용 항목에는 글머리 기호(▲, ▼, ●, •, -, * 등)를 절대로 붙이지 마세요!
+5. 표 내부의 모든 텍스트는 반드시 비즈니스 '체언지(体言止め, 명사형 종결)'로 작성하세요.
+6. '**' (볼드 기호) 또는 '<br>' (HTML 태그) 같은 기호는 사용하지 마세요.
+7. 마크다운 내용 외의 다른 인사말이나 잡담은 일절 출력하지 마세요.
+
+[입력된 한국어 내용]
+${koText}`;
+      } else {
+        const is30 = currentFormat === 'content_image_30';
+        const guideText = is30 
+          ? "(슬라이드 우측 70%는 대형 다이어그램/그림용으로 비워두므로, 좌측 30% 영역에는 가장 핵심적인 요점 2~3개 섹션과 각 1~2개 행의 짧고 명료한 체언지로 작성하세요.)"
+          : "(슬라이드 우측 50%는 그림/도표 삽입용으로 비워두며, 좌측 50%에 2~3개 섹션을 작성하세요.)";
+
         prompt = `당신은 일본 비즈니스 기획서 및 파워포인트 원페이지 보고서 작성 전문가입니다.
 입력된 한국어 내용을 분석하여, '단 1장의 슬라이드 좌측에 들어갈 핵심 내용' 형태로 구조화하여 일본어로 번역하세요.
-(슬라이드 우측 반쪽은 사용자가 그림이나 다이어그램을 넣을 수 있도록 비워둘 예정입니다.)
+${guideText}
 
 [필수 작성 규칙]
 1. 1행에는 슬라이드의 메인 타이틀을 '# 슬라이드 제목' 형식으로 작성하세요.
@@ -240,22 +274,6 @@
    - 세부 내용 항목 2
 4. 모든 문장은 비즈니스 일본어 '체언지(体言止め, 명사형 종결)'로 군더더기 없이 간결하게 작성하세요.
 5. 표(| ... |)는 절대로 출력하지 마세요.
-6. '**' (볼드 기호) 또는 '<br>' (HTML 태그) 같은 기호는 사용하지 마세요.
-7. 마크다운 내용 외의 다른 인사말이나 잡담은 일절 출력하지 마세요.
-
-[입력된 한국어 내용]
-${koText}`;
-      } else {
-        prompt = `당신은 일본 비즈니스 기획서 및 파워포인트 원페이지 보고서 작성 전문가입니다.
-입력된 한국어 내용을 분석하여, '단 1장의 슬라이드에 들어갈 핵심 1줄 요약문과 간결한 표(Table)' 형태로 구조화하여 일본어로 번역하세요.
-
-[필수 작성 규칙]
-1. 1행에는 슬라이드의 메인 타이틀을 '# 슬라이드 제목' 형식으로 작성하세요.
-2. 2행에는 장표 전체를 관통하는 '핵심 내용 1줄 요약문(결론/리드문)'을 반드시 '■ 요약문' 형식으로 작성하세요.
-3. 그 아래에 반드시 마크다운 표(Table) 형식으로 핵심 내용을 3~4개 열, 3~5개 행으로 작성하세요.
-   - 표 헤더 예시: | 項目 | 現状・課題 | 推進施策 | 期待効果・KPI |
-4. 표 내부의 내용 항목에는 글머리 기호(▲, ▼, ●, •, -, * 등)를 절대로 붙이지 마세요!
-5. 표 내부의 모든 텍스트는 반드시 비즈니스 '체언지(体言止め, 명사형 종결)'로 작성하세요.
 6. '**' (볼드 기호) 또는 '<br>' (HTML 태그) 같은 기호는 사용하지 마세요.
 7. 마크다운 내용 외의 다른 인사말이나 잡담은 일절 출력하지 마세요.
 
@@ -303,7 +321,7 @@ ${koText}`;
       return { title, summary, tableRows };
     }
 
-    // 2) 내용+그림 형식 파싱
+    // 2, 3) 내용+그림 형식 파싱
     function parseContentImage(text) {
       const lines = text.split('\n').map(l => cleanText(l)).filter(l => l);
       let title = "タイトル";
@@ -334,7 +352,7 @@ ${koText}`;
       return { title, summary, sections };
     }
 
-    // PptxGenJS를 사용한 PPTX 생성 및 브라우저 다운로드
+    // PptxGenJS를 사용한 PPTX 생성 및 브라우저 다운로드 (폰트: Meiryo UI 통일)
     async function generatePPT() {
       const btn = document.getElementById('btn-generate');
       const status = document.getElementById('status');
@@ -356,24 +374,24 @@ ${koText}`;
         if (currentFormat === 'table') {
           const { title, summary, tableRows } = parseTableContent(text);
 
-          // 1. 슬라이드 제목 (24pt 볼드, 왼쪽 맞춤)
+          // 1. 슬라이드 제목 (24pt 볼드, Meiryo UI)
           slide.addText(title, {
             x: 0.8, y: 0.35, w: 11.733, h: 0.65,
-            fontSize: 24, bold: true, color: '0F172A', align: 'left', valign: 'top'
+            fontSize: 24, bold: true, color: '0F172A', fontFace: FONT_FAMILY, align: 'left', valign: 'top'
           });
 
-          // 2. ■ 핵심 1줄 요약문 (16pt 볼드, 검은색 분리선 없이 바로 이어짐)
+          // 2. ■ 핵심 1줄 요약문 (16pt 볼드, Meiryo UI, 분리선 없음)
           if (summary) {
             slide.addText([
-              { text: "■ ", options: { bold: true, fontSize: 16, color: '1E293B' } },
-              { text: summary, options: { bold: true, fontSize: 16, color: '1E293B' } }
+              { text: "■ ", options: { bold: true, fontSize: 16, color: '1E293B', fontFace: FONT_FAMILY } },
+              { text: summary, options: { bold: true, fontSize: 16, color: '1E293B', fontFace: FONT_FAMILY } }
             ], {
               x: 0.8, y: 1.24, w: 11.733, h: 0.5,
               align: 'left', valign: 'top', wrap: true
             });
           }
 
-          // 3. 표 데이터 구성
+          // 3. 표 데이터 구성 (폰트: Meiryo UI)
           if (tableRows.length) {
             const tableData = tableRows.map((row, rIdx) => {
               return row.map(cellText => {
@@ -385,6 +403,7 @@ ${koText}`;
                       color: 'FFFFFF',
                       bold: true,
                       fontSize: 14,
+                      fontFace: FONT_FAMILY,
                       align: 'center',
                       valign: 'middle'
                     }
@@ -397,6 +416,7 @@ ${koText}`;
                       color: '1E293B',
                       bold: false,
                       fontSize: 14,
+                      fontFace: FONT_FAMILY,
                       align: 'left',
                       valign: 'middle'
                     }
@@ -415,59 +435,74 @@ ${koText}`;
           await pres.writeFile({ fileName: 'presentation_table.pptx' });
 
         } else {
-          // 내용 + 그림 형식
+          // 내용 + 그림 형식 (50:50 또는 30:70)
+          const is30 = currentFormat === 'content_image_30';
           const { title, summary, sections } = parseContentImage(text);
 
-          // 1. 슬라이드 제목 (24pt)
+          // 1. 슬라이드 제목 (24pt, Meiryo UI)
           slide.addText(title, {
             x: 0.8, y: 0.35, w: 11.733, h: 0.65,
-            fontSize: 24, bold: true, color: '0F172A', align: 'left', valign: 'top'
+            fontSize: 24, bold: true, color: '0F172A', fontFace: FONT_FAMILY, align: 'left', valign: 'top'
           });
 
-          // 2. ■ 1줄 요약문 (16pt)
+          // 2. ■ 1줄 요약문 (16pt, Meiryo UI)
           if (summary) {
             slide.addText([
-              { text: "■ ", options: { bold: true, fontSize: 16, color: '1E293B' } },
-              { text: summary, options: { bold: true, fontSize: 16, color: '1E293B' } }
+              { text: "■ ", options: { bold: true, fontSize: 16, color: '1E293B', fontFace: FONT_FAMILY } },
+              { text: summary, options: { bold: true, fontSize: 16, color: '1E293B', fontFace: FONT_FAMILY } }
             ], {
               x: 0.8, y: 1.24, w: 11.733, h: 0.5,
               align: 'left', valign: 'top', wrap: true
             });
           }
 
-          // 3. 좌측 내용 정리 영역 (너비 5.7인치)
+          // 너비 분할 계산 (총 가용 너비 11.733 - 간격 0.4 = 11.333)
+          // 50:50 -> 좌측 5.67, 우측 5.67, 우측 시작 6.87
+          // 30:70 -> 좌측 3.40 (30%), 우측 7.93 (70%), 우측 시작 4.60
+          const leftW = is30 ? 3.40 : 5.67;
+          const rightX = is30 ? 4.60 : 6.87;
+          const rightW = is30 ? 7.93 : 5.67;
+          const contentH = 5.0;
+          const contentY = 1.85;
+
+          const titleFontSize = is30 ? 14 : 15;
+          const itemFontSize = is30 ? 12 : 13;
+
+          // 3. 좌측 내용 정리 영역
           const textRuns = [];
           sections.forEach((sec, idx) => {
             if (sec.title) {
-              if (idx > 0) textRuns.push({ text: "\n", options: { fontSize: 8 } });
-              textRuns.push({ text: sec.title + "\n", options: { bold: true, fontSize: 15, color: '003153' } });
+              if (idx > 0) textRuns.push({ text: "\n", options: { fontSize: 8, fontFace: FONT_FAMILY } });
+              textRuns.push({ text: sec.title + "\n", options: { bold: true, fontSize: titleFontSize, color: '003153', fontFace: FONT_FAMILY } });
             }
             sec.items.forEach(item => {
-              textRuns.push({ text: "• " + item + "\n", options: { bold: false, fontSize: 13, color: '1E293B' } });
+              textRuns.push({ text: "• " + item + "\n", options: { bold: false, fontSize: itemFontSize, color: '1E293B', fontFace: FONT_FAMILY } });
             });
           });
 
           slide.addText(textRuns, {
-            x: 0.8, y: 1.85, w: 5.7, h: 5.0,
+            x: 0.8, y: contentY, w: leftW, h: contentH,
             align: 'left', valign: 'top', wrap: true
           });
 
           // 4. 우측 그림용 빈 공간 (점선 가이드 사각형)
           slide.addShape(pres.ShapeType.roundRect, {
-            x: 6.8, y: 1.85, w: 5.7, h: 5.0,
+            x: rightX, y: contentY, w: rightW, h: contentH,
             fill: { type: 'none' },
             line: { color: 'CBD5E1', width: 1.5, dashType: 'dash' }
           });
 
+          const guideTitle = is30 ? "🖼️ [ 대형 그림 / 다이어그램 삽입 영역 (70%) ]\n\n" : "🖼️ [ 그림 / 도표 삽입 영역 (50%) ]\n\n";
           slide.addText([
-            { text: "🖼️ [ 그림 / 도표 삽입 영역 ]\n\n", options: { bold: true, fontSize: 14, color: '94A3B8' } },
-            { text: "(이 영역에 이미지를 자유롭게 배치하세요)", options: { fontSize: 12, color: '94A3B8' } }
+            { text: guideTitle, options: { bold: true, fontSize: 14, color: '94A3B8', fontFace: FONT_FAMILY } },
+            { text: "(이 영역에 이미지를 자유롭게 배치하세요)", options: { fontSize: 12, color: '94A3B8', fontFace: FONT_FAMILY } }
           ], {
-            x: 6.8, y: 1.85, w: 5.7, h: 5.0,
+            x: rightX, y: contentY, w: rightW, h: contentH,
             align: 'center', valign: 'middle'
           });
 
-          await pres.writeFile({ fileName: 'presentation_content_image.pptx' });
+          const fileName = is30 ? 'presentation_content_image_30_70.pptx' : 'presentation_content_image_50_50.pptx';
+          await pres.writeFile({ fileName });
         }
 
         btn.disabled = false;
