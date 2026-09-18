@@ -93,15 +93,15 @@
         <div class="format-card" id="card-content-image-50" onclick="selectFormat('content_image_50')">
           <div class="icon">🖼️</div>
           <div>
-            <div class="title">2) 내용+그림 (50:50)</div>
+            <div class="title">2) 내용+그림 (오른쪽 그림 50%)</div>
             <div class="desc">좌측 내용(50%) / 우측 그림 공간(50%)</div>
           </div>
         </div>
         <div class="format-card" id="card-content-image-30" onclick="selectFormat('content_image_30')">
           <div class="icon">📐</div>
           <div>
-            <div class="title">3) 내용+그림 (30:70)</div>
-            <div class="desc">좌측 핵심내용(30%) / 우측 대형 그림(70%)</div>
+            <div class="title">3) 내용+그림 (상하 30:70)</div>
+            <div class="desc">상측 핵심내용 요약(30%) / 하측 대형 그림(70%)</div>
           </div>
         </div>
       </div>
@@ -162,11 +162,11 @@
         infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드, Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>프러시안 블루 표 (헤더·본문 14pt 고정)</b>';
         hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 표 내용 확인";
       } else if (fmt === 'content_image_50') {
-        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드, Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>좌측: 핵심 내용 정리(50%) / 우측: 그림 영역(50%)</b>';
+        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드, Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>좌측: 내용 정리(50%) / 우측: 그림 영역(50%)</b>';
         hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 좌측 텍스트 항목 확인 (우측 50%는 그림 영역)";
       } else {
-        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드, Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>좌측: 컴팩트 핵심내용(30%) / 우측: 대형 그림 영역(70%)</b>';
-        hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 좌측 핵심 텍스트 확인 (우측 70%는 대형 그림 영역)";
+        infoBar.innerHTML = '📌 <b>디자인 규격 (16:9 와이드, Meiryo UI):</b> 슬라이드 제목(24pt) ➡️ ■ 핵심 1줄 요약문(16pt) ➡️ <b>상측: 핵심내용 요약(30%) / 하측: 대형 그림 영역(70%)</b>';
+        hint.innerText = "💡 제목 아래 '■ 1줄 요약'과 상측 핵심 텍스트 확인 (하측 70%는 대형 다이어그램 영역)";
       }
     }
 
@@ -248,19 +248,19 @@
 [입력된 한국어 내용]
 ${koText}`;
       } else {
-        const is30 = currentFormat === 'content_image_30';
+        const is30 = (currentFormat === 'content_image_30');
         const guideText = is30 
-          ? "(슬라이드 우측 70%는 대형 다이어그램/그림용으로 비워두므로, 좌측 30% 영역에는 가장 핵심적인 요점 2~3개 섹션과 각 1~2개 행의 짧고 명료한 체언지로 작성하세요.)"
+          ? "(슬라이드 상측 30% 영역에는 가로로 배치될 핵심 요점 2~3개 섹션을 컴팩트하게 작성하고, 하측 70%는 대형 다이어그램/그림용으로 비워둡니다.)"
           : "(슬라이드 우측 50%는 그림/도표 삽입용으로 비워두며, 좌측 50%에 2~3개 섹션을 작성하세요.)";
 
         prompt = `당신은 일본 비즈니스 기획서 및 파워포인트 원페이지 보고서 작성 전문가입니다.
-입력된 한국어 내용을 분석하여, '단 1장의 슬라이드 좌측에 들어갈 핵심 내용' 형태로 구조화하여 일본어로 번역하세요.
+입력된 한국어 내용을 분석하여, '단 1장의 슬라이드 핵심 내용' 형태로 구조화하여 일본어로 번역하세요.
 ${guideText}
 
 [필수 작성 규칙]
 1. 1행에는 슬라이드의 메인 타이틀을 '# 슬라이드 제목' 형식으로 작성하세요.
 2. 2행에는 장표 전체를 관통하는 '핵심 내용 1줄 요약문(결론/리드문)'을 반드시 '■ 요약문' 형식으로 작성하세요.
-3. 3행부터는 표(Table)를 만들지 말고, 좌측 영역에 들어갈 2~3개의 핵심 항목(섹션)을 아래 형식으로 작성하세요:
+3. 3행부터는 표(Table)를 만들지 말고, 핵심 항목(섹션)을 아래 형식으로 작성하세요:
    ### 1. 현황 및 과제 (또는 일본어 명칭)
    - 세부 내용 항목 1 (체언지, 간결하게)
    - 세부 내용 항목 2 (체언지, 간결하게)
@@ -434,9 +434,8 @@ ${koText}`;
 
           await pres.writeFile({ fileName: 'presentation_table.pptx' });
 
-        } else {
-          // 내용 + 그림 형식 (50:50 또는 30:70)
-          const is30 = currentFormat === 'content_image_30';
+        } else if (currentFormat === 'content_image_30') {
+          // 3) 상하 30:70 형식 (상측 핵심내용 요약 30% / 하측 대형 그림 영역 70%)
           const { title, summary, sections } = parseContentImage(text);
 
           // 1. 슬라이드 제목 (24pt, Meiryo UI)
@@ -456,27 +455,88 @@ ${koText}`;
             });
           }
 
-          // 너비 분할 계산 (총 가용 너비 11.733 - 간격 0.4 = 11.333)
-          // 50:50 -> 좌측 5.67, 우측 5.67, 우측 시작 6.87
-          // 30:70 -> 좌측 3.40 (30%), 우측 7.93 (70%), 우측 시작 4.60
-          const leftW = is30 ? 3.40 : 5.67;
-          const rightX = is30 ? 4.60 : 6.87;
-          const rightW = is30 ? 7.93 : 5.67;
+          // 3. 상측 내용 영역 (30% 면적: y=1.85, h=1.45, 전체 너비 11.733)
+          // 섹션이 여러 개일 경우 가로 컬럼으로 균등 배치하여 시각적 가독성 극대화
+          const secCount = Math.max(sections.length, 1);
+          const totalW = 11.733;
+          const colGap = secCount > 1 ? 0.35 : 0;
+          const colW = (totalW - (secCount - 1) * colGap) / secCount;
+          const topY = 1.85;
+          const topH = 1.45;
+
+          sections.forEach((sec, idx) => {
+            const secX = 0.8 + idx * (colW + colGap);
+            const secRuns = [];
+
+            if (sec.title) {
+              secRuns.push({ text: sec.title + "\n", options: { bold: true, fontSize: 13.5, color: '003153', fontFace: FONT_FAMILY } });
+            }
+            sec.items.forEach(item => {
+              secRuns.push({ text: "• " + item + "\n", options: { bold: false, fontSize: 12, color: '1E293B', fontFace: FONT_FAMILY } });
+            });
+
+            slide.addText(secRuns, {
+              x: secX, y: topY, w: colW, h: topH,
+              align: 'left', valign: 'top', wrap: true
+            });
+          });
+
+          // 4. 하측 대형 그림 영역 (70% 면적: y=3.55, h=3.40, w=11.733)
+          const bottomY = 3.55;
+          const bottomH = 3.40;
+
+          slide.addShape(pres.ShapeType.roundRect, {
+            x: 0.8, y: bottomY, w: totalW, h: bottomH,
+            fill: { type: 'none' },
+            line: { color: 'CBD5E1', width: 1.5, dashType: 'dash' }
+          });
+
+          slide.addText([
+            { text: "🖼️ [ 대형 그림 / 다이어그램 삽입 영역 (70%) ]\n\n", options: { bold: true, fontSize: 14, color: '94A3B8', fontFace: FONT_FAMILY } },
+            { text: "(이 영역에 이미지를 자유롭게 배치하세요)", options: { fontSize: 12, color: '94A3B8', fontFace: FONT_FAMILY } }
+          ], {
+            x: 0.8, y: bottomY, w: totalW, h: bottomH,
+            align: 'center', valign: 'middle'
+          });
+
+          await pres.writeFile({ fileName: 'presentation_content_top_image_bottom_30_70.pptx' });
+
+        } else {
+          // 2) 좌우 50:50 형식 (좌측 내용 50% / 우측 그림 50%)
+          const { title, summary, sections } = parseContentImage(text);
+
+          // 1. 슬라이드 제목 (24pt, Meiryo UI)
+          slide.addText(title, {
+            x: 0.8, y: 0.35, w: 11.733, h: 0.65,
+            fontSize: 24, bold: true, color: '0F172A', fontFace: FONT_FAMILY, align: 'left', valign: 'top'
+          });
+
+          // 2. ■ 1줄 요약문 (16pt, Meiryo UI)
+          if (summary) {
+            slide.addText([
+              { text: "■ ", options: { bold: true, fontSize: 16, color: '1E293B', fontFace: FONT_FAMILY } },
+              { text: summary, options: { bold: true, fontSize: 16, color: '1E293B', fontFace: FONT_FAMILY } }
+            ], {
+              x: 0.8, y: 1.24, w: 11.733, h: 0.5,
+              align: 'left', valign: 'top', wrap: true
+            });
+          }
+
+          const leftW = 5.67;
+          const rightX = 6.87;
+          const rightW = 5.67;
           const contentH = 5.0;
           const contentY = 1.85;
 
-          const titleFontSize = is30 ? 14 : 15;
-          const itemFontSize = is30 ? 12 : 13;
-
-          // 3. 좌측 내용 정리 영역
+          // 3. 좌측 내용 정리 영역 (50%)
           const textRuns = [];
           sections.forEach((sec, idx) => {
             if (sec.title) {
               if (idx > 0) textRuns.push({ text: "\n", options: { fontSize: 8, fontFace: FONT_FAMILY } });
-              textRuns.push({ text: sec.title + "\n", options: { bold: true, fontSize: titleFontSize, color: '003153', fontFace: FONT_FAMILY } });
+              textRuns.push({ text: sec.title + "\n", options: { bold: true, fontSize: 15, color: '003153', fontFace: FONT_FAMILY } });
             }
             sec.items.forEach(item => {
-              textRuns.push({ text: "• " + item + "\n", options: { bold: false, fontSize: itemFontSize, color: '1E293B', fontFace: FONT_FAMILY } });
+              textRuns.push({ text: "• " + item + "\n", options: { bold: false, fontSize: 13, color: '1E293B', fontFace: FONT_FAMILY } });
             });
           });
 
@@ -485,24 +545,22 @@ ${koText}`;
             align: 'left', valign: 'top', wrap: true
           });
 
-          // 4. 우측 그림용 빈 공간 (점선 가이드 사각형)
+          // 4. 우측 그림용 빈 공간 (50%, 점선 가이드)
           slide.addShape(pres.ShapeType.roundRect, {
             x: rightX, y: contentY, w: rightW, h: contentH,
             fill: { type: 'none' },
             line: { color: 'CBD5E1', width: 1.5, dashType: 'dash' }
           });
 
-          const guideTitle = is30 ? "🖼️ [ 대형 그림 / 다이어그램 삽입 영역 (70%) ]\n\n" : "🖼️ [ 그림 / 도표 삽입 영역 (50%) ]\n\n";
           slide.addText([
-            { text: guideTitle, options: { bold: true, fontSize: 14, color: '94A3B8', fontFace: FONT_FAMILY } },
+            { text: "🖼️ [ 그림 / 도표 삽입 영역 (50%) ]\n\n", options: { bold: true, fontSize: 14, color: '94A3B8', fontFace: FONT_FAMILY } },
             { text: "(이 영역에 이미지를 자유롭게 배치하세요)", options: { fontSize: 12, color: '94A3B8', fontFace: FONT_FAMILY } }
           ], {
             x: rightX, y: contentY, w: rightW, h: contentH,
             align: 'center', valign: 'middle'
           });
 
-          const fileName = is30 ? 'presentation_content_image_30_70.pptx' : 'presentation_content_image_50_50.pptx';
-          await pres.writeFile({ fileName });
+          await pres.writeFile({ fileName: 'presentation_content_image_50_50.pptx' });
         }
 
         btn.disabled = false;

@@ -52,22 +52,22 @@ def clean_text(text):
     return text.replace('`', '').strip()
 
 def ai_structure_and_translate(api_key, korean_text, format_type='table'):
-    """형식(표, 내용+그림 50:50, 내용+그림 30:70)에 맞추어 1줄 요약문과 본문을 일본어로 구조화"""
+    """형식(표, 내용+그림 50:50, 내용+그림 상하 30:70)에 맞추어 1줄 요약문과 본문을 일본어로 구조화"""
     genai.configure(api_key=api_key)
 
     if format_type.startswith('content_image'):
         is30 = (format_type == 'content_image_30')
-        guide = "(슬라이드 우측 70%는 대형 다이어그램용이므로, 좌측 30% 영역에는 핵심 요점 2~3개 섹션과 각 1~2개 행의 짧고 명료한 체언지로 작성하세요.)" if is30 else "(슬라이드 우측 50%는 그림/도표 삽입용으로 비워두며, 좌측 50%에 2~3개 섹션을 작성하세요.)"
+        guide = "(슬라이드 상측 30% 영역에는 가로로 배치될 핵심 요약 2~3개 섹션을 컴팩트하게 작성하고, 하측 70%는 대형 다이어그램/그림용으로 비워둡니다.)" if is30 else "(슬라이드 우측 50%는 그림/도표 삽입용으로 비워두며, 좌측 50%에 2~3개 섹션을 작성하세요.)"
 
         prompt = f"""
 당신은 일본 비즈니스 기획서 및 파워포인트 원페이지 보고서 작성 전문가입니다.
-입력된 한국어 내용을 분석하여, '단 1장의 슬라이드 좌측에 들어갈 핵심 내용' 형태로 구조화하여 일본어로 번역하세요.
+입력된 한국어 내용을 분석하여, '단 1장의 슬라이드 핵심 내용' 형태로 구조화하여 일본어로 번역하세요.
 {guide}
 
 [필수 작성 규칙]
 1. 1행에는 슬라이드의 메인 타이틀을 '# 슬라이드 제목' 형식으로 작성하세요.
 2. 2행에는 장표 전체를 관통하는 '핵심 내용 1줄 요약문(결론/리드문)'을 반드시 '■ 요약문' 형식으로 작성하세요.
-3. 3행부터는 표(Table)를 만들지 말고, 좌측 영역에 들어갈 2~3개의 핵심 항목(섹션)을 아래 형식으로 작성하세요:
+3. 3행부터는 표(Table)를 만들지 말고, 핵심 항목(섹션)을 아래 형식으로 작성하세요:
    ### 1. 현황 및 과제 (또는 일본어 명칭)
    - 세부 내용 항목 1 (체언지, 간결하게)
    - 세부 내용 항목 2 (체언지, 간결하게)
@@ -304,94 +304,168 @@ def parse_content_image(text):
     return title, summary_line, sections
 
 def build_content_image_presentation(title, summary_line, sections, ratio='50'):
-    """2, 3) 내용+그림 형식 슬라이드 생성 (50:50 또는 30:70, Meiryo UI)"""
+    """2, 3) 내용+그림 슬라이드 생성
+    ratio == '30': 상하 분할 (상측 30% 핵심 요약 / 하측 70% 대형 다이어그램 영역)
+    ratio == '50': 좌우 분할 (좌측 50% 내용 정리 / 우측 50% 그림 영역)
+    """
     prs, slide = create_base_slide(title, summary_line)
 
-    is30 = (ratio == '30')
-    left_x = Inches(0.8)
-    content_y = Inches(1.85)
-    content_h = Inches(5.0)
+    if ratio == '30':
+        # 상하 30:70 분할
+        sec_count = max(len(sections), 1)
+        total_w = Inches(11.733)
+        col_gap = Inches(0.35) if sec_count > 1 else Inches(0)
+        col_w = (total_w - (col_gap * (sec_count - 1))) / sec_count
+        top_y = Inches(1.85)
+        top_h = Inches(1.45)
 
-    # 비율에 따른 너비 및 위치 계산
-    left_w = Inches(3.40) if is30 else Inches(5.67)
-    right_x = Inches(4.60) if is30 else Inches(6.87)
-    right_w = Inches(7.93) if is30 else Inches(5.67)
+        for sec_idx, sec in enumerate(sections):
+            sec_x = Inches(0.8) + sec_idx * (col_w + col_gap)
+            tb_sec = slide.shapes.add_textbox(sec_x, top_y, col_w, top_h)
+            tf_sec = tb_sec.text_frame
+            tf_sec.word_wrap = True
+            tf_sec.margin_left = Inches(0.05)
+            tf_sec.margin_right = Inches(0.05)
+            tf_sec.margin_top = Inches(0.05)
+            tf_sec.margin_bottom = Inches(0.05)
 
-    title_size = Pt(14) if is30 else Pt(15)
-    item_size = Pt(12) if is30 else Pt(13)
+            is_first = True
+            if sec['title']:
+                p_title = tf_sec.paragraphs[0]
+                is_first = False
+                p_title.alignment = PP_ALIGN.LEFT
+                r_title = p_title.add_run()
+                r_title.text = sec['title']
+                r_title.font.name = FONT_NAME
+                r_title.font.bold = True
+                r_title.font.size = Pt(13.5)
+                r_title.font.color.rgb = COLOR_PRUSSIAN_BLUE
 
-    # 1. 좌측 내용 영역
-    tb_left = slide.shapes.add_textbox(left_x, content_y, left_w, content_h)
-    tf = tb_left.text_frame
-    tf.word_wrap = True
-    tf.margin_left = Inches(0.08)
-    tf.margin_right = Inches(0.08)
-    tf.margin_top = Inches(0.08)
-    tf.margin_bottom = Inches(0.08)
+            for item in sec['items']:
+                p_item = tf_sec.paragraphs[0] if is_first else tf_sec.add_paragraph()
+                is_first = False
+                p_item.alignment = PP_ALIGN.LEFT
+                p_item.space_before = Pt(3)
 
-    is_first_para = True
-    for sec_idx, sec in enumerate(sections):
-        if sec['title']:
-            p_sec = tf.paragraphs[0] if is_first_para else tf.add_paragraph()
-            is_first_para = False
-            p_sec.alignment = PP_ALIGN.LEFT
-            if sec_idx > 0:
-                p_sec.space_before = Pt(12)
+                r_bullet = p_item.add_run()
+                r_bullet.text = "• "
+                r_bullet.font.name = FONT_NAME
+                r_bullet.font.bold = True
+                r_bullet.font.size = Pt(12)
+                r_bullet.font.color.rgb = COLOR_PRUSSIAN_BLUE
 
-            r_sec = p_sec.add_run()
-            r_sec.text = sec['title']
-            r_sec.font.name = FONT_NAME
-            r_sec.font.bold = True
-            r_sec.font.size = title_size
-            r_sec.font.color.rgb = COLOR_PRUSSIAN_BLUE
+                r_text = p_item.add_run()
+                r_text.text = item
+                r_text.font.name = FONT_NAME
+                r_text.font.size = Pt(12)
+                r_text.font.color.rgb = COLOR_TEXT_DARK
 
-        for item in sec['items']:
-            p_item = tf.paragraphs[0] if is_first_para else tf.add_paragraph()
-            is_first_para = False
-            p_item.alignment = PP_ALIGN.LEFT
-            p_item.space_before = Pt(4)
+        # 하측 대형 그림 영역 (70%)
+        bottom_y = Inches(3.55)
+        bottom_h = Inches(3.40)
+        guide_box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), bottom_y, total_w, bottom_h)
+        guide_box.fill.background()
+        guide_box.line.color.rgb = COLOR_BORDER_LIGHT
+        guide_box.line.width = Pt(1.5)
+        try:
+            guide_box.line.dash_style = MSO_LINE.DASH
+        except Exception:
+            pass
 
-            r_bullet = p_item.add_run()
-            r_bullet.text = "• "
-            r_bullet.font.name = FONT_NAME
-            r_bullet.font.bold = True
-            r_bullet.font.size = item_size
-            r_bullet.font.color.rgb = COLOR_PRUSSIAN_BLUE
+        tf_guide = guide_box.text_frame
+        tf_guide.vertical_anchor = MSO_ANCHOR.MIDDLE
+        p_g = tf_guide.paragraphs[0]
+        p_g.alignment = PP_ALIGN.CENTER
+        r_g1 = p_g.add_run()
+        r_g1.text = "🖼️ [ 대형 그림 / 다이어그램 삽입 영역 (70%) ]\n\n"
+        r_g1.font.name = FONT_NAME
+        r_g1.font.bold = True
+        r_g1.font.size = Pt(14)
+        r_g1.font.color.rgb = COLOR_MUTED
 
-            r_text = p_item.add_run()
-            r_text.text = item
-            r_text.font.name = FONT_NAME
-            r_text.font.size = item_size
-            r_text.font.color.rgb = COLOR_TEXT_DARK
+        r_g2 = p_g.add_run()
+        r_g2.text = "(이 영역에 이미지를 자유롭게 배치하세요)"
+        r_g2.font.name = FONT_NAME
+        r_g2.font.size = Pt(12)
+        r_g2.font.color.rgb = COLOR_MUTED
 
-    # 2. 우측 그림 영역 (점선 가이드 사각형)
-    guide_box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, right_x, content_y, right_w, content_h)
-    guide_box.fill.background()
-    guide_box.line.color.rgb = COLOR_BORDER_LIGHT
-    guide_box.line.width = Pt(1.5)
-    try:
-        guide_box.line.dash_style = MSO_LINE.DASH
-    except Exception:
-        pass
+    else:
+        # 좌우 50:50 분할
+        left_x = Inches(0.8)
+        content_y = Inches(1.85)
+        content_h = Inches(5.0)
+        left_w = Inches(5.67)
+        right_x = Inches(6.87)
+        right_w = Inches(5.67)
 
-    tf_guide = guide_box.text_frame
-    tf_guide.vertical_anchor = MSO_ANCHOR.MIDDLE
-    p_g = tf_guide.paragraphs[0]
-    p_g.alignment = PP_ALIGN.CENTER
+        tb_left = slide.shapes.add_textbox(left_x, content_y, left_w, content_h)
+        tf = tb_left.text_frame
+        tf.word_wrap = True
+        tf.margin_left = Inches(0.08)
+        tf.margin_right = Inches(0.08)
+        tf.margin_top = Inches(0.08)
+        tf.margin_bottom = Inches(0.08)
 
-    guide_title = "🖼️ [ 대형 그림 / 다이어그램 삽입 영역 (70%) ]\n\n" if is30 else "🖼️ [ 그림 / 도표 삽입 영역 (50%) ]\n\n"
-    r_g1 = p_g.add_run()
-    r_g1.text = guide_title
-    r_g1.font.name = FONT_NAME
-    r_g1.font.bold = True
-    r_g1.font.size = Pt(14)
-    r_g1.font.color.rgb = COLOR_MUTED
+        is_first_para = True
+        for sec_idx, sec in enumerate(sections):
+            if sec['title']:
+                p_sec = tf.paragraphs[0] if is_first_para else tf.add_paragraph()
+                is_first_para = False
+                p_sec.alignment = PP_ALIGN.LEFT
+                if sec_idx > 0:
+                    p_sec.space_before = Pt(12)
 
-    r_g2 = p_g.add_run()
-    r_g2.text = "(이 영역에 이미지를 자유롭게 배치하세요)"
-    r_g2.font.name = FONT_NAME
-    r_g2.font.size = Pt(12)
-    r_g2.font.color.rgb = COLOR_MUTED
+                r_sec = p_sec.add_run()
+                r_sec.text = sec['title']
+                r_sec.font.name = FONT_NAME
+                r_sec.font.bold = True
+                r_sec.font.size = Pt(15)
+                r_sec.font.color.rgb = COLOR_PRUSSIAN_BLUE
+
+            for item in sec['items']:
+                p_item = tf.paragraphs[0] if is_first_para else tf.add_paragraph()
+                is_first_para = False
+                p_item.alignment = PP_ALIGN.LEFT
+                p_item.space_before = Pt(4)
+
+                r_bullet = p_item.add_run()
+                r_bullet.text = "• "
+                r_bullet.font.name = FONT_NAME
+                r_bullet.font.bold = True
+                r_bullet.font.size = Pt(13)
+                r_bullet.font.color.rgb = COLOR_PRUSSIAN_BLUE
+
+                r_text = p_item.add_run()
+                r_text.text = item
+                r_text.font.name = FONT_NAME
+                r_text.font.size = Pt(13)
+                r_text.font.color.rgb = COLOR_TEXT_DARK
+
+        guide_box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, right_x, content_y, right_w, content_h)
+        guide_box.fill.background()
+        guide_box.line.color.rgb = COLOR_BORDER_LIGHT
+        guide_box.line.width = Pt(1.5)
+        try:
+            guide_box.line.dash_style = MSO_LINE.DASH
+        except Exception:
+            pass
+
+        tf_guide = guide_box.text_frame
+        tf_guide.vertical_anchor = MSO_ANCHOR.MIDDLE
+        p_g = tf_guide.paragraphs[0]
+        p_g.alignment = PP_ALIGN.CENTER
+        r_g1 = p_g.add_run()
+        r_g1.text = "🖼️ [ 그림 / 도표 삽입 영역 (50%) ]\n\n"
+        r_g1.font.name = FONT_NAME
+        r_g1.font.bold = True
+        r_g1.font.size = Pt(14)
+        r_g1.font.color.rgb = COLOR_MUTED
+
+        r_g2 = p_g.add_run()
+        r_g2.text = "(이 영역에 이미지를 자유롭게 배치하세요)"
+        r_g2.font.name = FONT_NAME
+        r_g2.font.size = Pt(12)
+        r_g2.font.color.rgb = COLOR_MUTED
 
     out = io.BytesIO()
     prs.save(out)
@@ -400,7 +474,6 @@ def build_content_image_presentation(title, summary_line, sections, ratio='50'):
 
 class PPTHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        # index.html이 있으면 index.html 서비스
         index_path = os.path.join(BASE_DIR, "index.html")
         if os.path.exists(index_path):
             with open(index_path, "rb") as f:
@@ -457,7 +530,7 @@ class PPTHandler(http.server.BaseHTTPRequestHandler):
                 if format_type == 'content_image_30':
                     title, summary_line, sections = parse_content_image(content_text)
                     out_bytes = build_content_image_presentation(title, summary_line, sections, ratio='30')
-                    filename = "presentation_content_image_30_70.pptx"
+                    filename = "presentation_content_top_image_bottom_30_70.pptx"
                 elif format_type in ('content_image_50', 'content_image'):
                     title, summary_line, sections = parse_content_image(content_text)
                     out_bytes = build_content_image_presentation(title, summary_line, sections, ratio='50')
@@ -490,7 +563,7 @@ if __name__ == "__main__":
     print(f"접속 주소: http://localhost:{PORT}")
     print(f"기본 양식 파일: {os.path.abspath(TEMPLATE_FILE)}")
     print("기본 폰트: Meiryo UI")
-    print("지원 형식: 1) 표 형식, 2) 내용+그림(50:50), 3) 내용+그림(30:70)")
+    print("지원 형식: 1) 표 형식, 2) 내용+그림(50:50), 3) 내용+그림(상하 30:70)")
     print("==================================================")
     with socketserver.TCPServer(("", PORT), PPTHandler) as httpd:
         httpd.serve_forever()
