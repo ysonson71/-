@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SingToScore - 마이크 음성 악보 변환기</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- VexFlow 4 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.4/build/cjs/vexflow.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="brand">
+        <span class="music-icon">🎵</span>
+        <div>
+          <h1>SingToScore</h1>
+          <p class="subtitle">마이크로 노래를 부르면 자동으로 5선지 악보로 변환</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge" id="mic-status-badge">🎤 마이크 대기 중</span>
+        <span class="badge" id="bpm-badge">BPM: 100</span>
+      </div>
+    </header>
+
+    <!-- 컨트롤 패널 -->
+    <section class="card control-panel">
+      <div class="controls-row">
+        <!-- 마이크 권한 및 녹음 -->
+        <div class="control-group action-group">
+          <button id="btn-record" class="btn btn-primary btn-large">
+            <span class="record-dot"></span>
+            <span id="btn-record-text">녹음 시작</span>
+          </button>
+          <button id="btn-demo" class="btn btn-secondary" title="마이크 없이 샘플 멜로디로 즉시 테스트">
+            ✨ 샘플 곡 로드 (작은 별)
+          </button>
+        </div>
+
+        <!-- 템포 및 메트로놈 -->
+        <div class="control-group">
+          <div class="setting-item">
+            <label for="bpm-input"><strong>템포 (BPM):</strong> <span id="bpm-val">100</span></label>
+            <input type="range" id="bpm-input" min="50" max="180" value="100" step="2">
+          </div>
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="metronome-toggle" checked>
+              <span>메트로놈 소리 켜기</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="countdown-toggle" checked>
+              <span>4박자 카운트다운 후 시작</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 감도 / 노이즈 게이트 -->
+        <div class="control-group">
+          <div class="setting-item">
+            <label for="noise-gate-input"><strong>마이크 감도 (노이즈 게이트):</strong></label>
+            <input type="range" id="noise-gate-input" min="0.01" max="0.15" value="0.03" step="0.005">
+            <span class="hint-text">잡음이 섞이면 오른쪽으로, 소리가 안 잡히면 왼쪽으로 조절</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 메트로놈 비트 표시등 & 카운트다운 -->
+      <div class="beat-indicator-bar" id="beat-bar">
+        <div class="beat-dot" data-beat="1">1</div>
+        <div class="beat-dot" data-beat="2">2</div>
+        <div class="beat-dot" data-beat="3">3</div>
+        <div class="beat-dot" data-beat="4">4</div>
+        <div class="countdown-text" id="countdown-display"></div>
+      </div>
+    </section>
+
+    <!-- 실시간 가창 피드백 (튜너 & 파형) -->
+    <section class="card monitor-panel" id="monitor-panel">
+      <div class="tuner-box">
+        <div class="note-display">
+          <span class="note-name" id="current-note">--</span>
+          <span class="note-octave" id="current-octave"></span>
+        </div>
+        <div class="tuner-details">
+          <div class="frequency" id="current-freq">0.0 Hz</div>
+          <div class="cents-meter">
+            <div class="cents-center"></div>
+            <div class="cents-pointer" id="cents-pointer"></div>
+          </div>
+          <div class="cents-text" id="cents-text">0 cents</div>
+        </div>
+      </div>
+      
+      <div class="meter-box">
+        <div class="meter-label">입력 볼륨</div>
+        <div class="meter-bar-bg">
+          <div class="meter-bar-fill" id="volume-meter"></div>
+        </div>
+        <div class="status-msg" id="recording-status-msg">녹음 시작 버튼을 누르고 노래를 불러보세요.</div>
+      </div>
+    </section>
+
+    <!-- 생성된 악보 뷰어 및 결과 툴바 -->
+    <section class="card score-section">
+      <div class="score-header">
+        <h2>🎼 생성된 5선지 악보</h2>
+        <div class="score-tools">
+          <button id="btn-play-score" class="btn btn-outline" disabled>▶ 악보 재생</button>
+          <button id="btn-stop-score" class="btn btn-outline" disabled>⏹ 정지</button>
+          <button id="btn-download-midi" class="btn btn-outline" disabled>💾 MIDI 다운로드</button>
+          <button id="btn-download-png" class="btn btn-outline" disabled>🖼️ PNG 이미지 저장</button>
+          <button id="btn-print" class="btn btn-outline" disabled>🖨️ 인쇄 / PDF</button>
+          <button id="btn-clear" class="btn btn-text">초기화</button>
+        </div>
+      </div>
+
+      <div class="score-summary" id="score-summary">
+        변환된 음표가 여기에 표시됩니다.
+      </div>
+
+      <!-- VexFlow 렌더링 영역 -->
+      <div id="score-output" class="score-output">
+        <div class="empty-state" id="empty-state">
+          <p>녹음 종료 후 자동으로 4/4 박자 5선지 악보가 그려집니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 팁 & 안내 카드 -->
+    <section class="tips-card">
+      <h3>💡 노래 인식 정확도를 높이는 꿀팁</h3>
+      <ul>
+        <li>메트로놈 박자(1, 2, 3, 4)에 맞춰 <strong>한 음씩 또렷하게</strong> '나~' 또는 '라~' 음절로 불러주세요.</li>
+        <li>이어폰을 착용하고 부르면 메트로놈 소리가 마이크로 재유입되지 않아 악보가 훨씬 깨끗하게 생성됩니다.</li>
+        <li>바이브레이션이나 포르타멘토(음을 끌어올리는 창법)보다는 음정을 일정하게 유지할 때 정확합니다.</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- 앱 모듈 스크립트 -->
+  <script src="js/pitch-detector.js"></script>
+  <script src="js/metronome.js"></script>
+  <script src="js/quantizer.js"></script>
+  <script src="js/sheet-renderer.js"></script>
+  <script src="js/synth-player.js"></script>
+  <script src="js/midi-exporter.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
